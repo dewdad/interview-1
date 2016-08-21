@@ -12,7 +12,11 @@ class SidewalkSort
 
     # First task is to split the line into a "numeric" part and a "string" part
     contents.each do |line|
-      num_part = line[/\A[\d]+/]
+      # - handle numbers?
+      #   - negative
+      #   - floats
+      # - handle whitespace
+      num_part = line[/\A*-?\d*\.{0,1}\d+/]
 
       string_part = line.strip # if there was no match, then the string is the entire line
 

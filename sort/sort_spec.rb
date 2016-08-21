@@ -1,5 +1,9 @@
 require_relative './main'
 
+RSpec.configure do |config|
+  config.formatter = :documentation
+end
+
 RSpec.describe SidewalkSort do
   before(:each) do
     @sorter = SidewalkSort.new
@@ -74,7 +78,25 @@ RSpec.describe SidewalkSort do
         expect(new_array[1][:numeric_part]).to eq(nil)
       end
 
+      it 'handles negative numbers' do
+        new_array = @sorter.parse_file([
+          '-42 apples',
+          ' -5 bananas', # handle leading spaces
+          '-3.6 cookies' # negative floats
+        ])
+        expect(new_array[0][:numeric_part]).to eq(-42)
+        expect(new_array[1][:numeric_part]).to eq(-5)
+        expect(new_array[2][:numeric_part]).to eq(-3.6)
+      end
 
+      it 'handles floats' do
+        new_array = @sorter.parse_file([
+          '4.2 apples',
+          ' 50.1 bananas' # handle leading space
+        ])
+        expect(new_array[0][:numeric_part]).to eq(4.2)
+        expect(new_array[1][:numeric_part]).to eq(50.1)
+      end
     end
   end
 
@@ -126,7 +148,6 @@ RSpec.describe SidewalkSort do
         {numeric_part: nil, string_part: 'bananas'}
       ])
     end
-
   end
 
 #  context '#write_file' do
