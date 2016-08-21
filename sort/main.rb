@@ -32,7 +32,13 @@ class SidewalkSort
 
   def sort_file(parsed_array)
     parsed_array.sort! do |a, b|
-      a[:numeric_part] <=> b[:numeric_part]
+      numeric_diff = a[:numeric_part] <=> b[:numeric_part]
+
+      if numeric_diff == 0
+        a[:string_part] <=> b[:string_part]
+      else
+        numeric_diff
+      end
     end
   end
 end
