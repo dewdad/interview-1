@@ -1,10 +1,12 @@
 class SidewalkSort
-  def do_work
-    contents = File.new('input.txt', 'r')
+  def do_work(input_file_name, output_file_name)
+    contents = File.new(input_file_name, 'r')
 
     parsed_array = parse_file(contents)
     sort_file(parsed_array)
-    write_file(parsed_array)
+    write_file(parsed_array, output_file_name)
+
+    contents.close()
   end
 
   def parse_file(contents)
@@ -57,4 +59,16 @@ class SidewalkSort
       end
     end
   end
+
+  def write_file(parsed_array, output_file_name)
+    output_file = File.new(output_file_name, 'w')
+    parsed_array.each do |row|
+      output_file.write("#{row[:numeric_part]} #{row[:string_part]}\n")
+    end
+    output_file.close()
+  end
 end
+
+puts 'Running!'
+sorter = SidewalkSort.new
+sorter.do_work('test_input.txt', 'test_output.txt')
