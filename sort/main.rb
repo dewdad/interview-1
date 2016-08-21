@@ -29,4 +29,10 @@ class SidewalkSort
 
     parsed_array
   end
+
+  def sort_file(parsed_array)
+    parsed_array.sort! do |a, b|
+      a[:numeric_part] <=> b[:numeric_part]
+    end
+  end
 end
