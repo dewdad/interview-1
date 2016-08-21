@@ -63,6 +63,18 @@ RSpec.describe SidewalkSort do
       ])
     end
 
+    it 'precedence to numbers over nil' do
+      test_array = [
+        {numeric_part: nil, string_part: 'bananas'},
+        {numeric_part: 1, string_part: 'apples'}
+      ]
+      @sorter.sort_file(test_array)
+      expect(test_array).to eq([
+        {numeric_part: 1, string_part: 'apples'},
+        {numeric_part: nil, string_part: 'bananas'}
+      ])
+    end
+
     it 'sorts by string when numbers are missing' do
       test_array = [
         {numeric_part: nil, string_part: 'bananas'},
