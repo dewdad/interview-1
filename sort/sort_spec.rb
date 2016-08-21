@@ -31,6 +31,31 @@ RSpec.describe SidewalkSort do
         expect(new_array[0][:string_part]).to eq('apples')
         expect(new_array[1][:string_part]).to eq('bananas')
       end
+
+      it 'white space shenangians' do
+        new_array = @sorter.parse_file([
+          'apples',
+          '     bananas', # handle leading spaces
+          'cookies     ', # handle trailing spaces
+          '  dumplings ', # both leading and trailing
+          ' eggs & ham '  # all the spaces
+        ])
+        expect(new_array[0][:string_part]).to eq('apples')
+        expect(new_array[1][:string_part]).to eq('bananas')
+        expect(new_array[2][:string_part]).to eq('cookies')
+        expect(new_array[3][:string_part]).to eq('dumplings')
+        expect(new_array[4][:string_part]).to eq('eggs & ham')
+      end
+
+      it 'ignores numeric digits in the string' do
+        new_array = @sorter.parse_file([
+          '9 c4tliv3s',
+          '9c4tliv3s' # isn't confused by the lack of space
+        ])
+
+        expect(new_array[0][:string_part]).to eq('c4tliv3s')
+        expect(new_array[1][:string_part]).to eq('c4tliv3s')
+      end
     end
 
     context 'numeric part' do
@@ -48,6 +73,8 @@ RSpec.describe SidewalkSort do
         expect(new_array[0][:numeric_part]).to eq(nil)
         expect(new_array[1][:numeric_part]).to eq(nil)
       end
+
+
     end
   end
 
@@ -100,15 +127,6 @@ RSpec.describe SidewalkSort do
       ])
     end
 
-    it 'ignores numeric digits in the string' do
-      new_array = @sorter.parse_file([
-        '9 c4tliv3s',
-        '9c4tliv3s' # isn't confused by the lack of space
-      ])
-
-      expect(new_array[0][:string_part]).to eq('c4tliv3s')
-      expect(new_array[1][:string_part]).to eq('c4tliv3s')
-    end
   end
 
 #  context '#write_file' do
