@@ -7,4 +7,26 @@ class SidewalkSort
 
     write_file(parsed_array)
   end
+
+  def parse_file(contents)
+    parsed_array = []
+
+    # First task is to split the line into a "numeric" part and a "string" part
+    contents.each do |line|
+      num_part = line[/\A[\d]+/]
+
+      # grab the string part before converting the num part
+      idx = num_part.length
+      string_part = line[idx..line.length].strip
+
+      num_part = num_part.to_f
+
+      parsed_array.push({
+        numeric_part: num_part,
+        string_part: string_part
+      })
+    end
+
+    parsed_array
+  end
 end
