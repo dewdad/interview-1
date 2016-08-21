@@ -113,6 +113,7 @@ RSpec.describe SidewalkSort do
       ])
     end
 
+
     it 'sorts by string when numbers match' do
       test_array = [
         {numeric_part: 1, string_part: 'bananas'},
@@ -122,18 +123,6 @@ RSpec.describe SidewalkSort do
       expect(test_array).to eq([
         {numeric_part: 1, string_part: 'apples'},
         {numeric_part: 1, string_part: 'bananas'}
-      ])
-    end
-
-    it 'precedence to numbers over nil' do
-      test_array = [
-        {numeric_part: nil, string_part: 'bananas'},
-        {numeric_part: 1, string_part: 'apples'}
-      ]
-      @sorter.sort_file(test_array)
-      expect(test_array).to eq([
-        {numeric_part: 1, string_part: 'apples'},
-        {numeric_part: nil, string_part: 'bananas'}
       ])
     end
 
@@ -148,6 +137,54 @@ RSpec.describe SidewalkSort do
         {numeric_part: nil, string_part: 'bananas'}
       ])
     end
+
+    context 'numeric part' do
+      it 'precedence to numbers over nil' do
+        test_array = [
+          {numeric_part: nil, string_part: 'bananas'},
+          {numeric_part: 1, string_part: 'apples'}
+        ]
+        @sorter.sort_file(test_array)
+        expect(test_array).to eq([
+          {numeric_part: 1, string_part: 'apples'},
+          {numeric_part: nil, string_part: 'bananas'}
+        ])
+      end
+
+      it 'sorts all kinds of numbers' do
+        test_array = [
+          {numeric_part: 10, string_part: 'apples'},
+          {numeric_part: -22, string_part: 'apples'},
+          {numeric_part: 3.14, string_part: 'apples'},
+          {numeric_part: 9000, string_part: 'apples'}
+
+        ]
+        @sorter.sort_file(test_array)
+        expect(test_array).to eq([
+          {numeric_part: -22, string_part: 'apples'},
+          {numeric_part: 3.14, string_part: 'apples'},
+          {numeric_part: 10, string_part: 'apples'},
+          {numeric_part: 9000, string_part: 'apples'}
+        ])
+      end
+
+      it 'sorts by numeric order rather than alpha order' do
+        test_array = [
+          {numeric_part: 90, string_part: 'apples'},
+          {numeric_part: 100, string_part: 'apples'},
+          {numeric_part: 5, string_part: 'apples'}
+
+        ]
+        @sorter.sort_file(test_array)
+        expect(test_array).to eq([
+          {numeric_part: 5, string_part: 'apples'},
+          {numeric_part: 90, string_part: 'apples'},
+          {numeric_part: 100, string_part: 'apples'}
+        ])
+      end
+    end
+
+
   end
 
 #  context '#write_file' do
