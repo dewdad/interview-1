@@ -15,11 +15,16 @@ class SidewalkSort
     contents.each do |line|
       num_part = line[/\A[\d]+/]
 
-      # grab the string part before converting the num part
-      idx = num_part.length
-      string_part = line[idx..line.length].strip
+      string_part = line # if there was no match, then the string is the entire line
 
-      num_part = num_part.to_f
+      unless num_part.nil?
+
+        # grab the string part before converting the num part
+        idx = num_part.length
+        string_part = line[idx..line.length].strip
+
+        num_part = num_part.to_f
+      end
 
       parsed_array.push({
         numeric_part: num_part,
