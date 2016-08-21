@@ -16,25 +16,38 @@ RSpec.describe SidewalkSort do
       ]
     end
 
-    it 'parses the numeric portion' do
-      new_array = @sorter.parse_file(test_input)
-      expect(new_array[0][:numeric_part]).to eq(10)
-      expect(new_array[1][:numeric_part]).to eq(2)
+    context 'string part' do
+      it 'parses the string portion' do
+        new_array = @sorter.parse_file(test_input)
+        expect(new_array[0][:string_part]).to eq('apples')
+        expect(new_array[1][:string_part]).to eq('bananas')
+      end
+
+      it 'handles missing numbers' do
+        new_array = @sorter.parse_file([
+          'apples',
+          ' bananas' # check to see if it handles the empty space correctly
+        ])
+        expect(new_array[0][:string_part]).to eq('apples')
+        expect(new_array[1][:string_part]).to eq('bananas')
+      end
     end
 
-    it 'parses the string portion' do
-      new_array = @sorter.parse_file(test_input)
-      expect(new_array[0][:string_part]).to eq('apples')
-      expect(new_array[1][:string_part]).to eq('bananas')
-    end
+    context 'numeric part' do
+      it 'parses the numeric portion' do
+        new_array = @sorter.parse_file(test_input)
+        expect(new_array[0][:numeric_part]).to eq(10)
+        expect(new_array[1][:numeric_part]).to eq(2)
+      end
 
-    it 'defaults the number to nil if missing' do
-      new_array = @sorter.parse_file([
-        'apples',
-        ' bananas' # check to see if it handles the empty space correctly
-      ])
-      expect(new_array[0][:numeric_part]).to eq(nil)
-      expect(new_array[1][:numeric_part]).to eq(nil)
+      it 'defaults the number to nil if missing' do
+        new_array = @sorter.parse_file([
+          'apples',
+          ' bananas' # check to see if it handles the empty space correctly
+        ])
+        expect(new_array[0][:numeric_part]).to eq(nil)
+        expect(new_array[1][:numeric_part]).to eq(nil)
+      end
     end
   end
 

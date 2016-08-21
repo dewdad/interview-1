@@ -3,8 +3,7 @@ class SidewalkSort
     contents = File.new('input.txt', 'r')
 
     parsed_array = parse_file(contents)
-    parsed_array = sort_file(parsed_array)
-
+    sort_file(parsed_array)
     write_file(parsed_array)
   end
 
@@ -15,7 +14,7 @@ class SidewalkSort
     contents.each do |line|
       num_part = line[/\A[\d]+/]
 
-      string_part = line # if there was no match, then the string is the entire line
+      string_part = line.strip # if there was no match, then the string is the entire line
 
       unless num_part.nil?
 
