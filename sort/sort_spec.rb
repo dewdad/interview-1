@@ -64,11 +64,32 @@ RSpec.describe SidewalkSort do
       it 'ignores numeric digits in the string' do
         new_array = @sorter.parse_file([
           '9 c4tliv3s',
-          '9c4tliv3s' # isn't confused by the lack of space
+          '9c4tliv3s', # isn't confused by the lack of space
+          'c4tliv3s'
         ])
 
         expect(new_array[0][:string_part]).to eq('c4tliv3s')
         expect(new_array[1][:string_part]).to eq('c4tliv3s')
+        expect(new_array[2][:string_part]).to eq('c4tliv3s')
+      end
+
+      it 'parses a blank line into a string rather than nil' do
+        new_array = @sorter.parse_file([
+          '',
+          '1 apple'
+        ])
+
+        expect(new_array[0][:string_part]).to eq('')
+        expect(new_array[1][:string_part]).to eq('apple')
+      end
+
+      it 'independent of numeric edge cases' do
+        new_array = @sorter.parse_file([
+          '-4 apples',
+          ' 50.1 bananas' # handle leading space
+        ])
+        expect(new_array[0][:string_part]).to eq('apples')
+        expect(new_array[1][:string_part]).to eq('bananas')
       end
     end
 
@@ -107,6 +128,13 @@ RSpec.describe SidewalkSort do
         expect(new_array[0][:numeric_part]).to eq(4.2)
         expect(new_array[1][:numeric_part]).to eq(50.1)
       end
+
+      it 'works even if no string part' do
+        new_array = @sorter.parse_file([
+          '42'
+        ])
+        expect(new_array[0][:numeric_part]).to eq(42)
+      end
     end
   end
 
@@ -123,29 +151,42 @@ RSpec.describe SidewalkSort do
       ])
     end
 
+    context 'string part' do
+      it 'sorts by string when numbers match' do
+        test_array = [
+          {numeric_part: 1, string_part: 'bananas'},
+          {numeric_part: 1, string_part: 'apples'}
+        ]
+        @sorter.sort_file(test_array)
+        expect(test_array).to eq([
+          {numeric_part: 1, string_part: 'apples'},
+          {numeric_part: 1, string_part: 'bananas'}
+        ])
+      end
 
-    it 'sorts by string when numbers match' do
-      test_array = [
-        {numeric_part: 1, string_part: 'bananas'},
-        {numeric_part: 1, string_part: 'apples'}
-      ]
-      @sorter.sort_file(test_array)
-      expect(test_array).to eq([
-        {numeric_part: 1, string_part: 'apples'},
-        {numeric_part: 1, string_part: 'bananas'}
-      ])
-    end
+      it 'sorts by string when numbers are missing' do
+        test_array = [
+          {numeric_part: nil, string_part: 'bananas'},
+          {numeric_part: nil, string_part: 'apples'}
+        ]
+        @sorter.sort_file(test_array)
+        expect(test_array).to eq([
+          {numeric_part: nil, string_part: 'apples'},
+          {numeric_part: nil, string_part: 'bananas'}
+        ])
+      end
 
-    it 'sorts by string when numbers are missing' do
-      test_array = [
-        {numeric_part: nil, string_part: 'bananas'},
-        {numeric_part: nil, string_part: 'apples'}
-      ]
-      @sorter.sort_file(test_array)
-      expect(test_array).to eq([
-        {numeric_part: nil, string_part: 'apples'},
-        {numeric_part: nil, string_part: 'bananas'}
-      ])
+      it 'empty string goes before anything else' do
+        test_array = [
+          {numeric_part: nil, string_part: 'A'},
+          {numeric_part: nil, string_part: ''}
+        ]
+        @sorter.sort_file(test_array)
+        expect(test_array).to eq([
+          {numeric_part: nil, string_part: ''},
+          {numeric_part: nil, string_part: 'A'}
+        ])
+      end
     end
 
     context 'numeric part' do

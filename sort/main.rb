@@ -18,7 +18,7 @@ class SidewalkSort
       #   - negative
       #   - floats
       # - handle whitespace
-      num_part = line[/\A*-?\d*\.{0,1}\d+/]
+      num_part = line[/\A[\s]*-?\d*\.{0,1}\d+/]
 
       string_part = line.strip # if there was no match, then the string is the entire line
 
@@ -73,3 +73,11 @@ end
 puts 'Running!'
 sorter = SidewalkSort.new
 sorter.do_work('test_input.txt', 'test_output.txt')
+
+# For debugging and nice output
+output_contents = File.new('test_output.txt', 'r')
+LIMIT = 5
+output_contents.each_with_index do |row, idx|
+  break if idx > LIMIT
+  puts row
+end
