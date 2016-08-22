@@ -33,7 +33,8 @@ class SidewalkSort
 
       parsed_array.push({
         numeric_part: num_part,
-        string_part: string_part
+        string_part: string_part,
+        original_line: line
       })
     end
 
@@ -63,7 +64,7 @@ class SidewalkSort
   def write_file(parsed_array, output_file_name)
     output_file = File.new(output_file_name, 'w')
     parsed_array.each do |row|
-      output_file.write("#{row[:numeric_part]} #{row[:string_part]}\n")
+      output_file.write(row[:original_line])
     end
     output_file.close()
   end

@@ -20,6 +20,16 @@ RSpec.describe SidewalkSort do
       ]
     end
 
+    it 'saves the original line' do
+      new_array = @sorter.parse_file(test_input)
+      expect(new_array.length).to eq(2)
+
+      new_array.each_with_index do |row, idx|
+        expect(row.length).to eq(3)
+        expect(row[:original_line]).to eq(test_input[idx])
+      end
+    end
+
     context 'string part' do
       it 'parses the string portion' do
         new_array = @sorter.parse_file(test_input)
