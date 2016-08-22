@@ -1,4 +1,5 @@
 require_relative '../sort'
+require 'digest/md5'
 
 RSpec.configure do |config|
   config.formatter = :documentation
@@ -8,9 +9,36 @@ RSpec.describe SidewalkSort do
   before(:each) do
     @sorter = SidewalkSort.new
   end
-  #context 'end-to-end' do
-  #end
-  #
+
+  context 'end-to-end' do
+    before(:all) do
+      @test_output = './spec/test_output.txt'
+      @known_test_input = './spec/test_input_case_1.txt'
+      @known_test_output = './spec/test_output_case_1.txt'
+
+      # If somehow the last run left behind artifacts, delete
+      File.delete(@test_output) if File.exist?(@test_output)
+    end
+
+    it 'correctly reads and writes to files' do
+      # somewhat redundant sanity check in case the before and after hooks fail,
+      # also, in case of concurrency issues on CI server with multithreading/jobs/runs
+      expect(File).not_to exist(@test_output)
+
+      @sorter.do_work(@known_test_input, @test_output)
+
+      expect(File).to exist(@test_output)
+
+      known_hash = Digest::MD5.hexdigest(File.read(@known_test_output))
+      new_hash = Digest::MD5.hexdigest(File.read(@test_output))
+      expect(new_hash).to eq(known_hash)
+    end
+
+    after(:all) do
+      # Make sure everything gets cleaned up no matter what
+      File.delete(@test_output)
+    end
+  end
 
   context '#parse_file' do
     let(:test_input) do
@@ -273,10 +301,5 @@ RSpec.describe SidewalkSort do
         ])
       end
     end
-
-
   end
-
-#  context '#write_file' do
-#  end
 end

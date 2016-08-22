@@ -1,5 +1,5 @@
 2 Steaks
-10 Chicken Wings
+ 10 Chicken Wings
 Foobar
 17 !@#$%^&*()
 343GuiltySparks

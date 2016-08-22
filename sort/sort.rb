@@ -3,6 +3,7 @@ class SidewalkSort
     contents = File.new(input_file_name, 'r')
 
     parsed_array = parse_file(contents)
+    # sort_file actually modifies parsed_array, so no need to get return val
     sort_file(parsed_array)
     write_file(parsed_array, output_file_name)
 
@@ -14,16 +15,20 @@ class SidewalkSort
 
     # First task is to split the line into a "numeric" part and a "string" part
     contents.each do |line|
-      # - handle numbers?
-      #   - negative
-      #   - floats
-      # - handle whitespace
+      ########
+      # Magic goes here:
+      # - allow any number of prefixed spaces/tabs/etc
+      # - then expect a number:
+      #   - allow negative
+      #   - allow floats
+      # - then expect a string
+      #   - for comparison purposes, we ignore any spaces/tabs or newlines in the "string"
+      #     - so, "10Apples" == "10 Apples   "
       num_part = line[/\A[\s]*-?\d*\.{0,1}\d+/]
 
       string_part = line.strip # if there was no match, then the string is the entire line
 
       unless num_part.nil?
-
         # grab the string part before converting the num part
         idx = num_part.length
         string_part = line[idx..line.length].strip
@@ -34,7 +39,7 @@ class SidewalkSort
       parsed_array.push({
         numeric_part: num_part,
         string_part: string_part,
-        original_line: line
+        original_line: line # we need this to write out the original lines
       })
     end
 

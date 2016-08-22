@@ -7,7 +7,7 @@ sorter.do_work(ARGV[0], output_file)
 
 puts "Sort complete! Output written to: #{output_file}"
 puts
-puts "Here's a sample of the first fwe (sorted) lines:"
+puts "Here's a sample of the first few (sorted) lines:"
 
 # For debugging and nice output
 output_contents = File.new(output_file, 'r')
