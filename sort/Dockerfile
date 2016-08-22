@@ -11,4 +11,8 @@ COPY . ./
 # Install rspec (and whatever other gems we might need in the future)
 RUN bundle install
 
-CMD ["rspec", "spec/sort_spec.rb"]
+# Run the spec tests as part of the build process!
+RUN rspec spec/sort_spec.rb
+
+# Run the script, will append any params passed into the docker run command
+ENTRYPOINT ["ruby", "main.rb"]
