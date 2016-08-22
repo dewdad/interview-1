@@ -1,4 +1,4 @@
-require_relative './main'
+require_relative '../sort'
 
 RSpec.configure do |config|
   config.formatter = :documentation
