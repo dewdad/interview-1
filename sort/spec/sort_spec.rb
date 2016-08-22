@@ -83,13 +83,21 @@ RSpec.describe SidewalkSort do
         expect(new_array[1][:string_part]).to eq('apple')
       end
 
-      it 'independent of numeric edge cases' do
+      it 'parses independent of numeric edge cases' do
         new_array = @sorter.parse_file([
           '-4 apples',
           ' 50.1 bananas' # handle leading space
         ])
         expect(new_array[0][:string_part]).to eq('apples')
         expect(new_array[1][:string_part]).to eq('bananas')
+      end
+
+      it 'parses non-alpha characters' do
+        new_array = @sorter.parse_file([
+          '15 !@#$%^&*()',
+        ])
+
+        expect(new_array[0][:string_part]).to eq('!@#$%^&*()')
       end
     end
 
@@ -185,6 +193,37 @@ RSpec.describe SidewalkSort do
         expect(test_array).to eq([
           {numeric_part: nil, string_part: ''},
           {numeric_part: nil, string_part: 'A'}
+        ])
+      end
+
+      it 'follows ascii table for string sorting' do
+        test_array = [
+          {numeric_part: nil, string_part: 'A'},
+          {numeric_part: nil, string_part: '^'},
+          {numeric_part: nil, string_part: '<'},
+          {numeric_part: nil, string_part: 'a'},
+          {numeric_part: nil, string_part: '~'},
+          {numeric_part: nil, string_part: '}'},
+          {numeric_part: nil, string_part: '_'},
+          {numeric_part: nil, string_part: '#'}
+        ]
+        @sorter.sort_file(test_array)
+        expect(test_array).to eq([
+          # some symbols are before alpha:  !"#$%&`()*+,-./:;<=>?@
+          {numeric_part: nil, string_part: '#'},
+          {numeric_part: nil, string_part: '<'},
+
+          {numeric_part: nil, string_part: 'A'},
+
+          # some are between upper and lower:  []\^_`
+          {numeric_part: nil, string_part: '^'},
+          {numeric_part: nil, string_part: '_'},
+
+          {numeric_part: nil, string_part: 'a'},
+
+          # some symobls are after alpha:  {}|~
+          {numeric_part: nil, string_part: '}'},
+          {numeric_part: nil, string_part: '~'}
         ])
       end
     end
