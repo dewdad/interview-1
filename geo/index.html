@@ -5,6 +5,30 @@
   stroke: steelblue;
   fill: #FFF;
 }
+
+
+.bar {
+  fill: steelblue;
+}
+
+.bar.active {
+  width: 3px;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
 </style>
 
 <!-- <script src="//d3js.org/d3.v3.min.js"></script> -->
@@ -16,45 +40,133 @@
 
   //Load in GeoJSON data
   d3.json("./../assets/kc-neighborhoods.json", function(json) {
+    create_map();
+    create_bar_chart();
 
-    //Width and height
-    var width = 900;
-    var height = 450;
+    function create_map() {
 
-    // create a first guess for the projection
-    var center = d3.geo.centroid(json)
-    var scale = 150;
-    var projection = d3.geo.mercator().scale(scale).center(center);
-    //Define path generator
-    var path = d3.geo.path()
-                    .projection(projection);
+      //Width and height
+      var width = 900;
+      var height = 450;
 
-    // using the path determine the bounds of the current map and use
-    // these to determine better values for the scale and translation
-    var bounds = path.bounds(json);
-    var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
-    var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
-    var scale = (hscale < vscale) ? hscale : vscale;
-    var offset = [width - (bounds[0][0] + bounds[1][0]) / 2,
-                     height - (bounds[0][1] + bounds[1][1]) / 2];
+      // create a first guess for the projection
+      var center = d3.geo.centroid(json)
+      var scale = 150;
+      var projection = d3.geo.mercator().scale(scale).center(center);
+      //Define path generator
+      var path = d3.geo.path()
+                      .projection(projection);
 
-    // new projection
-    projection = d3.geo.mercator().center(center)
-     .scale(scale * 0.9).translate(offset);
-    path = path.projection(projection);
+      // using the path determine the bounds of the current map and use
+      // these to determine better values for the scale and translation
+      var bounds = path.bounds(json);
+      var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
+      var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
+      var scale = (hscale < vscale) ? hscale : vscale;
+      var offset = [width - (bounds[0][0] + bounds[1][0]) / 2,
+                       height - (bounds[0][1] + bounds[1][1]) / 2];
 
-    //Create SVG element
-    var svg = d3.select(".chart")
-               .attr("width", width)
-               .attr("height", height)
+      // new projection
+      projection = d3.geo.mercator().center(center)
+       .scale(scale * 0.9).translate(offset);
+      path = path.projection(projection);
 
-    //Bind data and create one path per GeoJSON feature
-    svg.selectAll("path")
-      .data(json.features)
-      .enter()
-      .append("path")
-      .attr("d", path)
-      .attr("class", "zipcode");
+      //Create SVG element
+      var svg = d3.select(".chart")
+                 .attr("width", width)
+                 .attr("height", height)
+
+      //Bind data and create one path per GeoJSON feature
+      var shape = svg.selectAll("path")
+        .data(json.features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("class", "zipcode");
+
+      shape.on("mouseover", function(d) {
+          update_bar_chart(d.properties);
+        })
+    }
+
+    function create_bar_chart() {
+      var pop_keys = Object.keys(json.features[0].properties).filter(function(d) { if(d.startsWith('pop')) {return d;} });
+      ///////////////
+      // Bar stuff
+      var data = json.features;
+      ///////////////////////
+      // Chart Size Setup
+      var margin = { top: 35, right: 0, bottom: 30, left: 40 };
+
+      var width = 560 - margin.left - margin.right;
+      var chart_height = 275 - margin.top - margin.bottom;
+
+      var chart = d3.select("body").append("svg").attr('class',"chart")
+          .attr("width", 560)
+          .attr("height", 275)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      ///////////////////////
+      // Scales
+      var x = d3.scale.ordinal()
+          .domain(pop_keys)
+          .rangeRoundBands([0, width], .1);
+
+      var y = d3.scale.linear()
+          .domain([0, d3.max(data, function(d) { return parseInt(d.properties['pop-commute-drive_alone']); }) * 1.1])
+          .range([chart_height, 0]);
+
+      ///////////////////////
+      // Axis
+      var xAxis = d3.svg.axis()
+          .scale(x)
+          .orient("bottom");
+
+      var yAxis = d3.svg.axis()
+          .scale(y)
+          .orient("left");
+
+      chart.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + chart_height + ")")
+          .call(xAxis);
+
+      chart.append("g")
+          .attr("class", "y axis")
+          .call(yAxis);
+
+      // for anything that needs to update
+      update_bar_chart = function(bar_data) {
+        // transform from obj to array for d3
+        var temp_data = [];
+        for(var key in bar_data) {
+          if(pop_keys.indexOf(key) > -1) {
+            temp_data.push({name: key, value: bar_data[key]});
+          }
+        }
+
+        ///////////////////////
+        // Bars
+        var bar = chart.selectAll(".bar")
+            .data(temp_data)
+
+        bar.enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) { return x(d.name); })
+            .attr("y", chart_height)
+            .attr("width", x.rangeBand())
+            .attr("height", 0);
+
+        bar.transition()
+            .duration(1500)
+            .ease("elastic")
+            .attr("y", function(d) { return y(parseInt(d.value)); })
+            .attr("height", function(d) { return chart_height - y(parseInt(d.value)); })
+
+        bar.exit().remove()
+      }
+    }
 
   });
 </script>
