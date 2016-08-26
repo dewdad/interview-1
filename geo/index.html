@@ -14,6 +14,9 @@ svg {
   cursor: pointer;
 }
 
+.active {
+  fill: blue !important;
+}
 
 .bar {
   fill: steelblue;
@@ -91,9 +94,11 @@ svg {
         .enter()
         .append("path")
         .attr("d", path)
-        .attr("class", "area");
+        .attr("class", function(d) { return "area kc-"+d.properties.id });
 
       shape.on("mouseover", function(d) {
+          d3.selectAll(".active").classed("active", false);
+          d3.selectAll(".kc-"+d.properties.id).classed("active", true);
           update_bar_chart(d.properties);
         })
     }
@@ -260,7 +265,7 @@ svg {
           .data(data)
 
       bar.enter().append("rect")
-          .attr("class", "bar")
+          .attr("class", function(d) { return "bar kc-"+d.properties.id})
           .attr("x", function(d) { return x(d.properties.id); })
           .attr("y", chart_height)
           .attr("width", 2)
@@ -271,6 +276,12 @@ svg {
           .ease("elastic")
           .attr("y", function(d) { return y(parseInt(d.properties['pop-commute-drive_alone'])); })
           .attr("height", function(d) { return chart_height - y(parseInt(d.properties['pop-commute-drive_alone'])); })
+
+      bar.on("mouseover", function(d) {
+          d3.selectAll(".active").classed("active", false);
+          d3.selectAll(".kc-"+d.properties.id).classed("active", true);
+          update_bar_chart(d.properties);
+        })
 
     }
 
