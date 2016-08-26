@@ -120,7 +120,7 @@ h2 {
       function create_map() {
 
         //Width and height
-        var width = 470;
+        var width = 370;
         var height = 550;
 
         // create a first guess for the projection
@@ -137,7 +137,7 @@ h2 {
         var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
         var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
         var scale = (hscale < vscale) ? hscale : vscale;
-        var offset = [width - (bounds[0][0] + bounds[1][0]) / 4,
+        var offset = [width - (bounds[0][0] + bounds[1][0]) / 5.8,
                          height - (bounds[0][1] + bounds[1][1]) / 1.65];
 
         // new projection
@@ -202,11 +202,11 @@ h2 {
         // Chart Size Setup
         var margin = { top: 35, right: 0, bottom: 30, left: 40 };
 
-        var width = 560 - margin.left - margin.right;
+        var width = 600 - margin.left - margin.right;
         var chart_height = 275 - margin.top - margin.bottom;
 
         var chart = d3.select("body").append("svg").attr('class',"chart")
-            .attr("width", 560)
+            .attr("width", 600)
             .attr("height", 275)
           .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -323,11 +323,11 @@ h2 {
         // Chart Size Setup
         var margin = { top: 35, right: 0, bottom: 30, left: 40 };
 
-        var width = 560 - margin.left - margin.right;
+        var width = 600 - margin.left - margin.right;
         var chart_height = 275 - margin.top - margin.bottom;
 
         var chart = d3.select("body").append("svg").attr('class',"totals chart")
-            .attr("width", 560)
+            .attr("width", 600)
             .attr("height", 275)
           .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -336,10 +336,10 @@ h2 {
         // Scales
         var x = d3.scale.ordinal()
             .domain(data.map(function(d) { return d.properties.id; }))
-            .rangeRoundBands([0, width], .1);
+            .rangeBands([0, width]);
 
-        var y = d3.scale.linear()
-            .domain([0, d3.max(data, function(d) { return d.properties['total'] })* 1.1])
+        var y = d3.scale.log()
+            .domain([1, d3.max(data, function(d) { return d.properties['total'] })])
             .range([chart_height, 0]);
 
         ///////////////////////
@@ -350,7 +350,10 @@ h2 {
 
         var yAxis = d3.svg.axis()
             .scale(y)
-            .orient("left");
+            .orient("left")
+            .tickFormat(function (d) {
+              return y.tickFormat(4,d3.format(",d"))(d)
+            });
 
         chart.append("g")
             .attr("class", "y axis")
@@ -359,7 +362,7 @@ h2 {
         ///////////////////////
         // Title
         chart.append("text")
-          .text('Total Population that Commutes')
+          .text(label + 's Sorted by Commuter Population Size')
           .attr("text-anchor", "middle")
           .attr("class", "graph-title")
           .attr("y", -10)
@@ -371,7 +374,7 @@ h2 {
             .data(data)
 
         bar.enter().append("rect")
-            .attr("class", function(d) { return "bar kc-"+d.properties.id})
+            .attr("class", function(d) { return "bar kc-" + d.properties.id})
             .attr("x", function(d) { return x(d.properties.id); })
             .attr("y", chart_height)
             .attr("width", 2)
