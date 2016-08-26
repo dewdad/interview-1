@@ -167,8 +167,20 @@ h2 {
             .attr("class", "y axis")
             .call(yAxis);
 
+        var placeholder_text = ["Hover over the map","or the bars below","to explore the data!"];
+        var placeholder = chart.selectAll(".placeholder").data(placeholder_text);
+
+        placeholder.enter().append("text")
+            .text(function(d) { return d })
+            .attr("text-anchor", "middle")
+            .attr("font-size", 40)
+            .attr("y", function(d, i) { return 50 + 35 * i; })
+            .attr("x", width / 2.0);
+
         // for anything that needs to update
         update_bar_chart = function(bar_data) {
+          placeholder.remove();
+
           ///////////////////////
           // Title
           var title = chart.selectAll(".graph-title").data([bar_data])
