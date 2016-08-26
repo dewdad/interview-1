@@ -15,6 +15,10 @@ svg {
   cursor: pointer;
 }
 
+.legend-text {
+  font-size: 0.8em;
+}
+
 .active {
   fill: blue !important;
 }
@@ -159,6 +163,32 @@ h2 {
             d3.selectAll(".kc-"+d.properties.id).classed("active", true);
             update_bar_chart(d.properties);
           })
+
+
+        //legend stuff
+        var legend_data = [
+          { 'name': "Highest % Walking", 'color': 'green' },
+          { 'name': "Highest % Driving Alone", 'color': 'red' }
+        ]
+        var legend = svg.selectAll(".legend")
+            .data(legend_data)
+          .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(0," + ((height - 40) - (i * 20)) + ")"; });
+
+        legend.append("rect")
+            .attr("x", 0)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", function(d) { return d['color']; });
+
+        legend.append("text")
+            .attr("x", 20)
+            .attr("y", 9)
+            .attr("class", 'legend-text')
+            .attr("dy", ".35em")
+            .style("text-anchor", "start")
+            .text(function(d) { return d['name'] });
       }
 
       // barchart that shows commuter attributes for a given map area
