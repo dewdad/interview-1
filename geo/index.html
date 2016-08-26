@@ -19,11 +19,26 @@ svg {
   fill: blue !important;
 }
 
+.greenest {
+  fill: green !important;
+}
+
+.reddest {
+  fill: red !important;
+}
+
 .bar {
   fill: steelblue;
 }
 
 .bar.active {
+  width: 3px;
+}
+.bar.greenest {
+  width: 3px;
+}
+
+.bar.reddest {
   width: 3px;
 }
 
@@ -72,6 +87,31 @@ h2 {
       create_map();
       create_tooltip_chart();
       create_overall_chart();
+
+      // calculate the greenest area?
+      var greenest_val = 0;
+      var greenest;
+      json.features.forEach(function(d) {
+        var curr_val = (d.properties['pop-commute-walk'] / d.properties['total']);
+        if(curr_val > greenest_val) {
+          greenest = d;
+          greenest_val = curr_val;
+        }
+      })
+      d3.selectAll(".kc-"+greenest.properties.id).classed("greenest", true);
+
+      // calculate the opposite
+      var reddest_val = 0;
+      var reddest;
+      json.features.forEach(function(d) {
+        var curr_val = (d.properties['pop-commute-drive_alone'] / d.properties['total']);
+        if(curr_val > reddest_val) {
+          reddest = d;
+          reddest_val = curr_val;
+        }
+      })
+      d3.selectAll(".kc-"+reddest.properties.id).classed("reddest", true);
+
 
       function create_map() {
 
