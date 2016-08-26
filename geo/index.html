@@ -200,6 +200,10 @@
     function create_overall_chart() {
       var data = json.features;
 
+      data = data.sort(function(a, b) {
+        return parseInt(a.properties['pop-commute-drive_alone']) - parseInt(b.properties['pop-commute-drive_alone'])
+      })
+
       ///////////////////////
       // Chart Size Setup
       var margin = { top: 35, right: 0, bottom: 30, left: 40 };
