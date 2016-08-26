@@ -63,6 +63,9 @@ h2 {
       // remove anything that might be present (to allow for switching between tracts + neighborhoods)
       d3.selectAll("svg").remove();
 
+      // dynamically determine the commuter attributes by grabbing keys with the pop- prefix
+      var pop_keys = Object.keys(json.features[0].properties).filter(function(d) { if(d.startsWith('pop')) {return d;} });
+
       create_map();
       create_tooltip_chart();
       create_overall_chart();
@@ -118,8 +121,6 @@ h2 {
       // barchart that shows commuter attributes for a given map area
       // effectively a super fancy tooltip
       function create_tooltip_chart() {
-        // dynamically determine the commuter attributes by grabbing keys with the pop- prefix
-        var pop_keys = Object.keys(json.features[0].properties).filter(function(d) { if(d.startsWith('pop')) {return d;} });
 
         ///////////////
         // Bar stuff
@@ -180,7 +181,7 @@ h2 {
 
           title.transition()
             .text(function(d) {
-              return d.shid.slice(d.shid.lastIndexOf(":") + 1);
+              return label + ": " + d.shid.slice(d.shid.lastIndexOf(":") + 1);
             });
 
 
@@ -215,14 +216,22 @@ h2 {
       }
 
       // show distribution of overall commuter by car
-      // for some context?
-      // TODO: make the bars highlight depending on the area
-      // TOOD: should this be totals rather than commuter by car?
+      // to provide context for the tooltip bars
       function create_overall_chart() {
         var data = json.features;
 
+        data.forEach(function(d) {
+          var new_val = 0;
+          for(var key in d.properties) {
+            if(pop_keys.indexOf(key) > -1) {
+              new_val += d.properties[key];
+            }
+          }
+          d.properties['total'] = new_val;
+        });
+
         data = data.sort(function(a, b) {
-          return parseInt(a.properties['pop-commute-drive_alone']) - parseInt(b.properties['pop-commute-drive_alone'])
+          return parseInt(a.properties['total']) - parseInt(b.properties['total'])
         })
 
         ///////////////////////
@@ -245,7 +254,7 @@ h2 {
             .rangeRoundBands([0, width], .1);
 
         var y = d3.scale.linear()
-            .domain([0, d3.max(data, function(d) { return d.properties['pop-commute-drive_alone'] })* 1.1])
+            .domain([0, d3.max(data, function(d) { return d.properties['total'] })* 1.1])
             .range([chart_height, 0]);
 
         ///////////////////////
@@ -265,7 +274,7 @@ h2 {
         ///////////////////////
         // Title
         chart.append("text")
-          .text('Commuters that drive alone')
+          .text('Total Population that Commutes')
           .attr("text-anchor", "middle")
           .attr("class", "graph-title")
           .attr("y", -10)
@@ -286,8 +295,8 @@ h2 {
         bar.transition()
             .duration(1500)
             .ease("elastic")
-            .attr("y", function(d) { return y(parseInt(d.properties['pop-commute-drive_alone'])); })
-            .attr("height", function(d) { return chart_height - y(parseInt(d.properties['pop-commute-drive_alone'])); })
+            .attr("y", function(d) { return y(parseInt(d.properties['total'])); })
+            .attr("height", function(d) { return chart_height - y(parseInt(d.properties['total'])); })
 
         bar.on("mouseover", function(d) {
             d3.selectAll(".active").classed("active", false);
