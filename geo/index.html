@@ -145,6 +145,22 @@
 
       // for anything that needs to update
       update_bar_chart = function(bar_data) {
+        ///////////////////////
+        // Title
+        var title = chart.selectAll(".graph-title").data([bar_data])
+
+        title.enter().append("text")
+          .attr("text-anchor", "middle")
+          .attr("class", "graph-title")
+          .attr("y", -10)
+          .attr("x", width / 2.0);
+
+        title.transition()
+          .text(function(d) {
+            return d.shid.slice(d.shid.lastIndexOf(":") + 1);
+          });
+
+
         // transform from obj to array for d3
         var temp_data = [];
         for(var key in bar_data) {
