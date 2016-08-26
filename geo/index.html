@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-.zipcode {
+.area {
   stroke: steelblue;
   fill: #FFF;
+}
+
+.area:hover {
+  fill: blue;
+  cursor: pointer;
 }
 
 
@@ -82,7 +87,7 @@
         .enter()
         .append("path")
         .attr("d", path)
-        .attr("class", "zipcode");
+        .attr("class", "area");
 
       shape.on("mouseover", function(d) {
           update_bar_chart(d.properties);
@@ -90,7 +95,9 @@
     }
 
     function create_bar_chart() {
+      // dynamically determine the commuter attributes by grabbing keys with the pop- prefix
       var pop_keys = Object.keys(json.features[0].properties).filter(function(d) { if(d.startsWith('pop')) {return d;} });
+
       ///////////////
       // Bar stuff
       var data = json.features;
@@ -159,8 +166,8 @@
             .attr("height", 0);
 
         bar.transition()
-            .duration(1500)
-            .ease("elastic")
+            .duration(300)
+            .ease("sine")
             .attr("y", function(d) { return y(parseInt(d.value)); })
             .attr("height", function(d) { return chart_height - y(parseInt(d.value)); })
 
