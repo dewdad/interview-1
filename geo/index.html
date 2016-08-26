@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
+svg {
+  float: left;
+}
 .area {
   stroke: steelblue;
   fill: #FFF;
@@ -46,13 +49,14 @@
   //Load in GeoJSON data
   d3.json("./../assets/kc-neighborhoods.json", function(json) {
     create_map();
-    create_bar_chart();
+    create_tooltip_chart();
+    create_overall_chart();
 
     function create_map() {
 
       //Width and height
-      var width = 900;
-      var height = 450;
+      var width = 470;
+      var height = 550;
 
       // create a first guess for the projection
       var center = d3.geo.centroid(json)
@@ -68,12 +72,12 @@
       var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
       var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
       var scale = (hscale < vscale) ? hscale : vscale;
-      var offset = [width - (bounds[0][0] + bounds[1][0]) / 2,
-                       height - (bounds[0][1] + bounds[1][1]) / 2];
+      var offset = [width - (bounds[0][0] + bounds[1][0]) / 4,
+                       height - (bounds[0][1] + bounds[1][1]) / 1.65];
 
       // new projection
       projection = d3.geo.mercator().center(center)
-       .scale(scale * 0.9).translate(offset);
+       .scale(scale * 0.96).translate(offset);
       path = path.projection(projection);
 
       //Create SVG element
