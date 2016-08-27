@@ -15,7 +15,6 @@ svg {
 
 .area:hover {
   fill: blue;
-  /* cursor: pointer */;
 }
 
 .legend-header {
@@ -29,7 +28,6 @@ svg {
 
 .bar {
   fill: steelblue;
-  /* cursor: pointer */;
 }
 
 .bar.active {
@@ -101,7 +99,7 @@ h2 {
   lots of help from http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
   */
 
-  create_dashboard('./../assets/kc-neighborhoods.json', 'Neighborhood', 'neighborhood-button');
+  create_dashboard('./kc-neighborhoods.json', 'Neighborhood', 'neighborhood-button');
 
   function create_dashboard(data_source, label, button_id) {
 
@@ -473,7 +471,7 @@ h2 {
 <body>
   <div class='header'>
     <h2>Kansas City Commuter Data</h2>
-    <button id='tract-button' onclick="create_dashboard('./../assets/kc-tracts.json', 'Census Tract', 'tract-button')")>Tracts</button>
-    <button id='neighborhood-button' onclick="create_dashboard('./../assets/kc-neighborhoods.json', 'Neighborhood', 'neighborhood-button')">Neighborhoods</button>
+    <button id='tract-button' onclick="create_dashboard('./kc-tracts.json', 'Census Tract', 'tract-button')")>Tracts</button>
+    <button id='neighborhood-button' onclick="create_dashboard('./kc-neighborhoods.json', 'Neighborhood', 'neighborhood-button')">Neighborhoods</button>
   </div>
 </body>
