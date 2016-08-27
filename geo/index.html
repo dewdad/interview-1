@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
+body {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+}
 svg {
   float: left;
 }
@@ -15,8 +18,12 @@ svg {
   cursor: pointer;
 }
 
-.legend-text {
-  font-size: 0.8em;
+.legend-header {
+  font-size: 0.9em;
+}
+
+.legend {
+  font-size: 0.7em;
 }
 
 .bar {
@@ -38,7 +45,7 @@ svg {
   fill: purple;
 }
 .yellowest {
-  fill: yellow;
+  fill: darkorange;
 }
 
 .greenest:hover, .greenest.active {
@@ -138,7 +145,7 @@ h2 {
       d3.select(".map").append("text")
           .attr("x", 0)
           .attr("y", 420)
-          .attr("dy", ".35em")
+          .attr("class", "legend-header")
           .text("Highest Percentage Areas:")
 
       var legend = d3.select(".map").selectAll(".legend")
@@ -266,7 +273,7 @@ h2 {
         placeholder.enter().append("text")
             .text(function(d) { return d })
             .attr("text-anchor", "middle")
-            .attr("font-size", 40)
+            .attr("font-size", 32)
             .attr("y", function(d, i) { return 50 + 35 * i; })
             .attr("x", width / 2.0);
 
@@ -385,7 +392,7 @@ h2 {
           .text(label + 's Sorted by Commuter Population Size')
           .attr("text-anchor", "middle")
           .attr("class", "graph-title")
-          .attr("y", -10)
+          .attr("y", chart_height+ 20)
           .attr("x", width / 2.0);
 
         ///////////////////////
@@ -397,7 +404,7 @@ h2 {
             .attr("class", function(d) { return "bar kc-" + d.properties.id})
             .attr("x", function(d) { return x(d.properties.id); })
             .attr("y", chart_height)
-            .attr("width", 2)
+            .attr("width", label == 'Neighborhood' ? 2 : 3) // there are less census tracts, 2 pixels hurts my eyes due to the contrast
             .attr("height", 0);
 
         bar.transition()
@@ -421,6 +428,6 @@ h2 {
   <div class='header'>
     <h2>Kansas City Commuter Data</h2>
     <button id='tract-button' onclick="create_dashboard('./../assets/kc-tracts.json', 'Census Tract', 'tract-button')")>Tracts</button>
-    <button id='neighborhood-button' onclick="create_dashboard('./../assets/kc-neighborhoods.json', 'Neighorhood', 'neighborhood-button')">Neighborhoods</button>
+    <button id='neighborhood-button' onclick="create_dashboard('./../assets/kc-neighborhoods.json', 'Neighborhood', 'neighborhood-button')">Neighborhoods</button>
   </div>
 </body>
