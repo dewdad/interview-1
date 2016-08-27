@@ -15,7 +15,7 @@ svg {
 
 .area:hover {
   fill: blue;
-  cursor: pointer;
+  /* cursor: pointer */;
 }
 
 .legend-header {
@@ -24,12 +24,12 @@ svg {
 
 .legend {
   font-size: 0.7em;
-  cursor: pointer;
+  cursor: default;
 }
 
 .bar {
   fill: steelblue;
-  cursor: pointer;
+  /* cursor: pointer */;
 }
 
 .bar.active {
@@ -90,6 +90,7 @@ svg {
 
 h2 {
   display:inline-block;
+  margin-right: 20px;
 }
 </style>
 
@@ -360,7 +361,13 @@ h2 {
               .ease("sine")
               .attr("y", function(d) { return y(d.value) - 5; })
               .text(function(d) {
+                // Translate the amount to a percentage for the area.
                 var perc = ((d['value'] / d['total']).toFixed(2) * 100.0).toFixed(0);
+
+                // Small values that are greater than 0 should probably be "<1%", rather than actually 0%
+                if(perc == 0 && d['value'] > 0) {
+                  perc = "<1";
+                }
                 return parseInt(d['value']) + " (" + perc + "%)";
               });
 
@@ -423,7 +430,7 @@ h2 {
           .text(label + 's Sorted by Commuter Population Size')
           .attr("text-anchor", "middle")
           .attr("class", "graph-title")
-          .attr("y", chart_height+ 20)
+          .attr("y", chart_height + 20)
           .attr("x", width / 2.0);
 
         ///////////////////////
@@ -441,8 +448,16 @@ h2 {
         bar.transition()
             .duration(1500)
             .ease("elastic")
-            .attr("y", function(d) { return y(parseInt(d.properties['total'])); })
-            .attr("height", function(d) { return chart_height - y(parseInt(d.properties['total'])); })
+            .attr("y", function(d) {
+              if(d.properties['total'] > 0) { // one of the areas has 0, which returns an impossible height, so ignore
+                return y(parseInt(d.properties['total']));
+              }
+            })
+            .attr("height", function(d) {
+              if(d.properties['total'] > 0) { // one of the areas has 0, which returns an impossible height, so ignore
+                return chart_height - y(parseInt(d.properties['total']));
+              }
+            })
 
         bar.on("mouseover", function(d) {
             d3.selectAll(".active").classed("active", false);
