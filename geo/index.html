@@ -19,18 +19,6 @@ svg {
   font-size: 0.8em;
 }
 
-.active {
-  fill: blue !important;
-}
-
-.greenest {
-  fill: green !important;
-}
-
-.reddest {
-  fill: red !important;
-}
-
 .bar {
   fill: steelblue;
 }
@@ -38,11 +26,33 @@ svg {
 .bar.active {
   width: 3px;
 }
-.bar.greenest {
-  width: 3px;
+
+.active {
+  fill: blue;
 }
 
-.bar.reddest {
+.greenest {
+  fill: green;
+}
+
+.greenest:hover, .greenest.active {
+  fill: lightgreen !important;
+}
+
+.reddest {
+  fill: maroon !important;
+}
+
+.reddest:hover, .reddest.active {
+  fill: red !important;
+}
+
+.bar.active.greenest {
+  fill: lightgreen !important;
+  width: 3px;
+}
+.bar.active.reddest {
+  fill: red !important;
   width: 3px;
 }
 
@@ -116,6 +126,31 @@ h2 {
       })
       d3.selectAll(".kc-"+reddest.properties.id).classed("reddest", true);
 
+      //legend stuff
+      var legend_data = [
+        { 'name': "Highest % Walking", 'class': 'greenest', 'id': greenest.properties.id },
+        { 'name': "Highest % Driving Alone", 'class': 'reddest', 'id': reddest.properties.id }
+      ]
+      var legend = d3.select(".map").selectAll(".legend")
+          .data(legend_data)
+        .enter().append("g")
+          .attr("class", function(d) { return 'legend kc-' + d['id'] })
+          .attr("transform", function(d, i) { return "translate(0," + ((510) - (i * 20)) + ")"; });
+
+      legend.append("rect")
+          .attr("x", 0)
+          .attr("width", 18)
+          .attr("height", 18)
+          .attr('class', function(d) { return 'kc-' + d['id'] + ' ' + d['class'] });
+
+      legend.append("text")
+          .attr("x", 20)
+          .attr("y", 9)
+          .attr("class", 'legend-text')
+          .attr("dy", ".35em")
+          .style("text-anchor", "start")
+          .text(function(d) { return d['name'] });
+
 
       function create_map() {
 
@@ -149,6 +184,7 @@ h2 {
         var svg = d3.select("body").append("svg")
                    .attr("width", width)
                    .attr("height", height)
+                   .attr("class", "map");
 
         //Bind data and create one path per GeoJSON feature
         var shape = svg.selectAll("path")
@@ -163,32 +199,6 @@ h2 {
             d3.selectAll(".kc-"+d.properties.id).classed("active", true);
             update_bar_chart(d.properties);
           })
-
-
-        //legend stuff
-        var legend_data = [
-          { 'name': "Highest % Walking", 'color': 'green' },
-          { 'name': "Highest % Driving Alone", 'color': 'red' }
-        ]
-        var legend = svg.selectAll(".legend")
-            .data(legend_data)
-          .enter().append("g")
-            .attr("class", "legend")
-            .attr("transform", function(d, i) { return "translate(0," + ((height - 40) - (i * 20)) + ")"; });
-
-        legend.append("rect")
-            .attr("x", 0)
-            .attr("width", 18)
-            .attr("height", 18)
-            .style("fill", function(d) { return d['color']; });
-
-        legend.append("text")
-            .attr("x", 20)
-            .attr("y", 9)
-            .attr("class", 'legend-text')
-            .attr("dy", ".35em")
-            .style("text-anchor", "start")
-            .text(function(d) { return d['name'] });
       }
 
       // barchart that shows commuter attributes for a given map area
