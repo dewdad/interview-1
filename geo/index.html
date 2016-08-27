@@ -24,10 +24,12 @@ svg {
 
 .legend {
   font-size: 0.7em;
+  cursor: pointer;
 }
 
 .bar {
   fill: steelblue;
+  cursor: pointer;
 }
 
 .bar.active {
@@ -41,32 +43,34 @@ svg {
 .greenest {
   fill: green;
 }
-.purplest {
-  fill: purple;
-}
-.yellowest {
-  fill: darkorange;
-}
-
 .greenest:hover, .greenest.active {
   fill: lightgreen !important;
 }
 
+.purplest {
+  fill: purple;
+}
+.purplest:hover, .purplest.active {
+  fill: magenta !important;
+}
+
+.yellowest {
+  fill: chocolate;
+}
+.yellowest:hover, .yellowest.active {
+  fill: yellow !important;
+}
+
+
 .reddest {
   fill: maroon !important;
 }
-
 .reddest:hover, .reddest.active {
   fill: red !important;
 }
 
-.bar.active.greenest {
-  fill: lightgreen !important;
-  width: 3px;
-}
-.bar.active.reddest {
-  fill: red !important;
-  width: 3px;
+.bar.active {
+  width: 4px;
 }
 
 .axis text {
@@ -111,6 +115,17 @@ h2 {
       // dynamically determine the commuter attributes by grabbing keys with the pop- prefix
       var pop_keys = Object.keys(json.features[0].properties).filter(function(d) { if(d.startsWith('pop')) {return d;} });
 
+      // add "total" to each area
+      json.features.forEach(function(d) {
+        var new_val = 0;
+        for(var key in d.properties) {
+          if(pop_keys.indexOf(key) > -1) {
+            new_val += d.properties[key];
+          }
+        }
+        d.properties['total'] = new_val;
+      });
+
       create_map();
       create_tooltip_chart();
       create_overall_chart();
@@ -138,7 +153,8 @@ h2 {
         legend_data.push({
           'name': p,
           'class': highest_colors[i],
-          'id': highest_perc[p].area.properties.id
+          'id': highest_perc[p].area.properties.id,
+          'properties': highest_perc[p].area.properties
         })
       });
 
@@ -167,6 +183,12 @@ h2 {
           .attr("dy", ".35em")
           .style("text-anchor", "start")
           .text(function(d) { return d['name'] });
+
+      legend.on("mouseover", function(d) {
+          d3.selectAll(".active").classed("active", false);
+          d3.selectAll(".kc-"+d.id).classed("active", true);
+          update_bar_chart(d.properties);
+        })
 
 
       function create_map() {
@@ -301,7 +323,7 @@ h2 {
           var temp_data = [];
           for(var key in bar_data) {
             if(pop_keys.indexOf(key) > -1) {
-              temp_data.push({name: key, value: bar_data[key]});
+              temp_data.push({name: key, value: bar_data[key], total: bar_data['total']});
             }
           }
 
@@ -337,7 +359,10 @@ h2 {
               .duration(300)
               .ease("sine")
               .attr("y", function(d) { return y(d.value) - 5; })
-              .text(function(d) { return parseInt(d['value']); });
+              .text(function(d) {
+                var perc = ((d['value'] / d['total']).toFixed(2) * 100.0).toFixed(0);
+                return parseInt(d['value']) + " (" + perc + "%)";
+              });
 
           bar_text.exit().remove();
         }
@@ -347,16 +372,6 @@ h2 {
       // to provide context for the tooltip bars
       function create_overall_chart() {
         var data = json.features;
-
-        data.forEach(function(d) {
-          var new_val = 0;
-          for(var key in d.properties) {
-            if(pop_keys.indexOf(key) > -1) {
-              new_val += d.properties[key];
-            }
-          }
-          d.properties['total'] = new_val;
-        });
 
         data = data.sort(function(a, b) {
           return parseInt(a.properties['total']) - parseInt(b.properties['total'])
