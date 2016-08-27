@@ -1,0 +1,4 @@
+sidewalk-sort:
+  build: .
+  volumes:
+    - ./output:/app/output # mount the output folders so we can read the script output
