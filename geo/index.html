@@ -34,6 +34,12 @@ svg {
 .greenest {
   fill: green;
 }
+.purplest {
+  fill: purple;
+}
+.yellowest {
+  fill: yellow;
+}
 
 .greenest:hover, .greenest.active {
   fill: lightgreen !important;
@@ -102,40 +108,44 @@ h2 {
       create_tooltip_chart();
       create_overall_chart();
 
-      // calculate the greenest area?
-      var greenest_val = 0;
-      var greenest;
-      json.features.forEach(function(d) {
-        var curr_val = (d.properties['pop-commute-walk'] / d.properties['total']);
-        if(curr_val > greenest_val) {
-          greenest = d;
-          greenest_val = curr_val;
-        }
-      })
-      d3.selectAll(".kc-"+greenest.properties.id).classed("greenest", true);
+      var highest_perc = {};
 
-      // calculate the opposite
-      var reddest_val = 0;
-      var reddest;
-      json.features.forEach(function(d) {
-        var curr_val = (d.properties['pop-commute-drive_alone'] / d.properties['total']);
-        if(curr_val > reddest_val) {
-          reddest = d;
-          reddest_val = curr_val;
-        }
-      })
-      d3.selectAll(".kc-"+reddest.properties.id).classed("reddest", true);
+      var highest_colors = ['reddest', 'yellowest', 'purplest', 'greenest'];
+      var legend_data = [];
 
-      //legend stuff
-      var legend_data = [
-        { 'name': "Highest % Walking", 'class': 'greenest', 'id': greenest.properties.id },
-        { 'name': "Highest % Driving Alone", 'class': 'reddest', 'id': reddest.properties.id }
-      ]
+      pop_keys.forEach(function(p, i) {
+        highest_perc[p] = {
+          'area': null,
+          'val': null,
+          'color': highest_colors[i]
+        }
+
+        json.features.forEach(function(d) {
+          var curr_val = (d.properties[p] / d.properties['total']);
+          if(curr_val > highest_perc[p].val) {
+            highest_perc[p].area = d;
+            highest_perc[p].val = curr_val;
+          }
+        })
+        d3.selectAll(".kc-"+highest_perc[p].area.properties.id).classed(highest_colors[i], true);
+        legend_data.push({
+          'name': p,
+          'class': highest_colors[i],
+          'id': highest_perc[p].area.properties.id
+        })
+      });
+
+      d3.select(".map").append("text")
+          .attr("x", 0)
+          .attr("y", 420)
+          .attr("dy", ".35em")
+          .text("Highest Percentage Areas:")
+
       var legend = d3.select(".map").selectAll(".legend")
           .data(legend_data)
         .enter().append("g")
           .attr("class", function(d) { return 'legend kc-' + d['id'] })
-          .attr("transform", function(d, i) { return "translate(0," + ((510) - (i * 20)) + ")"; });
+          .attr("transform", function(d, i) { return "translate(0," + ((430) + (i * 20)) + ")"; });
 
       legend.append("rect")
           .attr("x", 0)
@@ -172,7 +182,7 @@ h2 {
         var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
         var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
         var scale = (hscale < vscale) ? hscale : vscale;
-        var offset = [width - (bounds[0][0] + bounds[1][0]) / 5.8,
+        var offset = [width - (bounds[0][0] + bounds[1][0]) / 6.5,
                          height - (bounds[0][1] + bounds[1][1]) / 1.65];
 
         // new projection
