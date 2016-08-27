@@ -71,7 +71,7 @@ svg {
   width: 4px;
 }
 
-.axis text {
+.axis text, .axis {
   font: 10px sans-serif;
 }
 
@@ -248,7 +248,7 @@ h2 {
         var data = json.features;
         ///////////////////////
         // Chart Size Setup
-        var margin = { top: 35, right: 0, bottom: 30, left: 40 };
+        var margin = { top: 35, right: 0, bottom: 30, left: 50 };
 
         var width = 600 - margin.left - margin.right;
         var chart_height = 275 - margin.top - margin.bottom;
@@ -287,6 +287,13 @@ h2 {
         chart.append("g")
             .attr("class", "y axis")
             .call(yAxis);
+
+        chart.append("text")
+            .attr("x", 0)
+            .attr("y", -5)
+            .attr('text-anchor', 'end')
+            .attr("class", "axis axis-label")
+            .text("Population")
 
         var placeholder_text = ["Hover over the map","or the bars below","to explore the data!"];
         var placeholder = chart.selectAll(".placeholder").data(placeholder_text);
@@ -384,7 +391,7 @@ h2 {
 
         ///////////////////////
         // Chart Size Setup
-        var margin = { top: 35, right: 0, bottom: 30, left: 40 };
+        var margin = { top: 35, right: 0, bottom: 30, left: 50 };
 
         var width = 600 - margin.left - margin.right;
         var chart_height = 275 - margin.top - margin.bottom;
@@ -421,6 +428,13 @@ h2 {
         chart.append("g")
             .attr("class", "y axis")
             .call(yAxis);
+
+        chart.append("text")
+            .attr("x", 0)
+            .attr("y", -5)
+            .attr('text-anchor', 'end')
+            .attr("class", "axis axis-label")
+            .text("Population")
 
         ///////////////////////
         // Title
