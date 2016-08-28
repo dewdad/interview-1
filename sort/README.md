@@ -4,16 +4,28 @@ Sorting Challenge
 
 ## How To:
 
-Easy way (docker):
-- `docker-compose run sidewalk-sort /path/to/input.txt`
+1. `docker-compose run sidewalk-sort ./files/test.txt`
 
-Hard way (if docker isn't cooperating)
-- If you have ruby (this should work on a mac)
-  - `ruby main.rb /path/to/input.txt`
+The deliverable is a collection of ruby spec tests and ruby scripts
+that are wrapped in a docker-compose file to make them easy to run.
 
-If you want to run with a sample test file, feel free to use: `./spec/test_input_case_1.txt`
-- eg: `docker-compose run sidewalk-sort ./spec/test_input_case_1.txt`
 
+## Troubleshooting
+
+Docker isn't cooperating
+- If you have ruby (this should work on a mac), you can try running on bare metal
+  - `ruby main.rb ./files/test.txt`
+
+I'd like to run the program on a different dataset/file
+- Cool! Place your file into the `.files/` directory
+- And then run `docker-compose run sidewalk-sort ./files/<name-of-your-file>`
+  - Your sorted output file should appear in the `./files` directory on completion as `./files/<name-of-your-file>-output.txt`
+
+My input file isn't working (`No such file or directory @ rb_sysopen`)
+- Make sure your test files are in the `./files` directory
+
+Do I have to run test files from the `./files` directory?
+- Yep, the docker container only mounts that directory to read/write from
 
 
 ## Test Suite
@@ -22,13 +34,13 @@ If you want to run with a sample test file, feel free to use: `./spec/test_input
   in turn should run as part of the `docker-compose run`), and the
   output should show up during "Step 6"
 - Alternatively, you can run them yourself locally if you have ruby on your machine
-  - `rspec spec/compare_spec_.rb`
+  - `rspec spec/sort_spec.rb`
     - might need to run `bundle install` first to get rspec loaded
 
 
 ## Other notes
 
-Extra features not explicitly outlined in the prompt:
+Extra features of this script, not explicitly outlined in the prompt:
 - Handle negative numbers, floats/decimals
 - Handle whitespace (or lack thereof)
 - Handle basically any ASCII character in the "string" part
