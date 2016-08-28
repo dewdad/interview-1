@@ -4,67 +4,31 @@
 body {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
 }
+
 svg {
   float: left;
 }
 
-.area {
-  stroke: steelblue;
-  fill: #FFF;
-}
-
-.area:hover {
-  fill: blue;
-}
-
-.legend-header {
-  font-size: 0.9em;
-}
-
-.legend {
-  font-size: 0.7em;
-  cursor: default;
-}
-
-.bar {
-  fill: steelblue;
-}
-
-.bar.active {
-  width: 3px;
+h2 {
+  display:inline-block;
+  margin-right: 20px;
 }
 
 .active {
   fill: blue;
 }
 
-.greenest {
-  fill: green;
-}
-.greenest:hover, .greenest.active {
-  fill: lightgreen !important;
+/* map things */
+
+.area {
+  stroke: steelblue;
+  fill: #FFF;
 }
 
-.purplest {
-  fill: purple;
-}
-.purplest:hover, .purplest.active {
-  fill: magenta !important;
-}
+/* bar chart things */
 
-.yellowest {
-  fill: chocolate;
-}
-.yellowest:hover, .yellowest.active {
-  fill: yellow !important;
-}
-
-
-.reddest {
-  fill: maroon !important;
-}
-.reddest:hover, .reddest.active {
-  fill: red !important;
+.bar {
+  fill: steelblue;
 }
 
 .bar.active {
@@ -86,10 +50,45 @@ svg {
   display: none;
 }
 
-h2 {
-  display:inline-block;
-  margin-right: 20px;
+/* legend + highest % category colors */
+
+.legend-header {
+  font-size: 0.9em;
 }
+
+.legend {
+  font-size: 0.7em;
+  cursor: default;
+}
+
+.greenest {
+  fill: green;
+}
+.greenest:hover, .greenest.active {
+  fill: lightgreen !important;
+}
+
+.purplest {
+  fill: purple;
+}
+.purplest:hover, .purplest.active {
+  fill: magenta !important;
+}
+
+.yellowest {
+  fill: goldenrod;
+}
+.yellowest:hover, .yellowest.active {
+  fill: yellow !important;
+}
+
+.reddest {
+  fill: maroon !important;
+}
+.reddest:hover, .reddest.active {
+  fill: red !important;
+}
+
 </style>
 
 <!-- <script src="//d3js.org/d3.v3.min.js"></script> -->
