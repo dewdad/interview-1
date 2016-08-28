@@ -10,7 +10,10 @@ puts "##"
 puts "##"
 puts "Sorting file: #{ARGV[0]}!"
 
-output_file = 'output/output.txt'
+# remove extension from file name
+file_name = File.join(File.dirname(ARGV[0]), File.basename(ARGV[0], '.*'))
+output_file = file_name + '-output.txt'
+
 sorter = SidewalkSort.new
 sorter.do_work(ARGV[0], output_file)
 

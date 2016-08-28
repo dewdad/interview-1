@@ -1,4 +1,4 @@
 sidewalk-sort:
   build: .
   volumes:
-    - ./output:/app/output # mount the output folders so we can read the script output
+    - ./files:/app/files # mount the "files" folder so we can add new input files and read any new output files without having to rebuild the container
