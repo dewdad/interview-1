@@ -4,16 +4,21 @@ Sorting Challenge
 
 ## How To:
 
-Easy way (docker):
-- `docker-compose run sidewalk-sort /path/to/input.txt`
+1. `docker-compose run sidewalk-sort /path/to/input.txt`
 
-Hard way (if docker isn't cooperating)
-- If you have ruby (this should work on a mac)
+The deliverable is a collection of ruby spec tests and ruby scripts
+that are wrapped in a docker-compose file to make them easy to run.
+
+
+## Troubleshooting
+
+Docker isn't cooperating
+- If you have ruby (this should work on a mac), you can try running on bare metal
   - `ruby main.rb /path/to/input.txt`
 
-If you want to run with a sample test file, feel free to use: `./spec/test_input_case_1.txt`
-- eg: `docker-compose run sidewalk-sort ./spec/test_input_case_1.txt`
-
+Is there a sample input file I can test the program on?
+- Yep! Feel free to use: `./spec/test_input_case_1.txt`
+  - eg: `docker-compose run sidewalk-sort ./spec/test_input_case_1.txt`
 
 
 ## Test Suite
@@ -28,7 +33,7 @@ If you want to run with a sample test file, feel free to use: `./spec/test_input
 
 ## Other notes
 
-Extra features not explicitly outlined in the prompt:
+Extra features of this script, not explicitly outlined in the prompt:
 - Handle negative numbers, floats/decimals
 - Handle whitespace (or lack thereof)
 - Handle basically any ASCII character in the "string" part

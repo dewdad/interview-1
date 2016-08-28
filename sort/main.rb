@@ -5,10 +5,11 @@ puts "##############################"
 puts "##"
 puts "##"
 puts "## MYSIDEWALK code submission stuff"
-puts "##  (ps the spec tests should be right above ^)"
+puts "##  (ps the spec tests should be right above if this is the first run^)"
 puts "##"
 puts "##"
 puts "Sorting file: #{ARGV[0]}!"
+
 output_file = 'output/output.txt'
 sorter = SidewalkSort.new
 sorter.do_work(ARGV[0], output_file)
