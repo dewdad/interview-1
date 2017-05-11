@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+}
+
+svg {
+  float: left;
+}
+
+h2 {
+  display:inline-block;
+  margin-right: 20px;
+}
+
+.active {
+  fill: blue !important;
+}
+
+/* map things */
+
+.area {
+  stroke: steelblue;
+  fill: #FFF;
+}
+
+/* bar chart things */
+
+.bar {
+  fill: steelblue;
+}
+
+.bar.active {
+  width: 4px;
+}
+
+.axis text, .axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+/* legend + highest % category colors */
+
+.legend-header {
+  font-size: 0.9em;
+}
+
+.legend {
+  font-size: 0.7em;
+  cursor: default;
+}
+
+.green-area {
+  fill: green;
+}
+.green-area:hover, .green-area.active {
+  fill: lightgreen !important;
+}
+
+.purple-area {
+  fill: purple;
+}
+.purple-area:hover, .purple-area.active {
+  fill: magenta !important;
+}
+
+.yellow-area {
+  fill: goldenrod;
+}
+.yellow-area:hover, .yellow-area.active {
+  fill: yellow !important;
+}
+
+.red-area {
+  fill: maroon !important;
+}
+.red-area:hover, .red-area.active {
+  fill: red !important;
+}
+
+</style>
+
+<script src="./d3.min.js"></script>
+<script>
+
+  create_dashboard('neighborhood');
+
+  function create_dashboard(data_type) {
+
+    // choose between the two data sources
+    if(data_type == 'tract') {
+      var data_source = './kc-tracts.json';
+      var label = 'Census Tract';
+      var button_id = 'tract-button';
+    } else if(data_type == 'neighborhood') {
+      var data_source = './kc-neighborhoods.json';
+      var label = 'Neighborhood';
+      var button_id = 'neighborhood-button';
+    }
+
+    //Load in GeoJSON data
+    d3.json(data_source, function(json) {
+
+      ///////////////////////
+      ///////////////////////
+      // Main
+
+      // Turn the active button blue
+      d3.selectAll("button").attr("style", "");
+      d3.select('#'+button_id).attr("style", "color: blue;");
+
+      // Remove anything that might be present (to allow for switching between tracts + neighborhoods)
+      d3.selectAll("svg").remove();
+
+      // dynamically determine the commuter attributes by grabbing keys with the pop- prefix
+      var pop_keys = Object.keys(json.features[0].properties).filter(function(d) { if(d.startsWith('pop')) { return d; } });
+      calculate_totals();
+
+      // Create the maps and charts for the dashboard!
+      kc_map(370, 550);
+      tooltip_chart(600, 275);
+      overall_chart(600, 275);
+      highest_percentage_areas();
+
+
+      ///////////////////////
+      ///////////////////////
+      // Helper Functions + Charts
+
+      // Calculate "totals" for each area
+      function calculate_totals() {
+        json.features.forEach(function(d) {
+          d.properties['total'] = 0;
+          for(var key in d.properties) {
+            if(pop_keys.indexOf(key) > -1) {
+              d.properties['total'] += d.properties[key];
+            }
+          }
+        });
+      }
+
+      // Identify the areas with the highest percentage of the 4 commuter categories, then color
+      // the areas appropriately and tie them together on interaction.
+      function highest_percentage_areas() {
+
+        var highest_perc = {};
+
+        var highest_colors = ['red-area', 'yellow-area', 'purple-area', 'green-area'];
+        var legend_data = [];
+
+        // determine the areas, add new color classes, and create a data object to populate the legend
+        pop_keys.forEach(function(p, i) {
+          // pre-populate an object for ease of iteration.
+          highest_perc[p] = {
+            'val': null,
+            'color': highest_colors[i]
+          }
+
+          // find the area with the highest percentage
+          json.features.forEach(function(d) {
+            var curr_val = (d.properties[p] / d.properties['total']);
+            if(curr_val > highest_perc[p].val) {
+              highest_perc[p].area = d;
+              highest_perc[p].val = curr_val;
+            }
+          });
+
+          d3.selectAll(".kc-"+highest_perc[p].area.properties.id).classed(highest_colors[i], true);
+          legend_data.push({
+            'name': p,
+            'class': highest_colors[i],
+            'id': highest_perc[p].area.properties.id,
+            'properties': highest_perc[p].area.properties
+          })
+        });
+
+        d3.select(".map").append("text")
+            .attr("x", 0)
+            .attr("y", 420)
+            .attr("class", "legend-header")
+            .text("Highest Percentage Areas:");
+
+        var legend = d3.select(".map").selectAll(".legend")
+            .data(legend_data)
+          .enter().append("g")
+            .attr("class", function(d) { return 'legend kc-' + d['id'] })
+            .attr("transform", function(d, i) { return "translate(0," + ((430) + (i * 20)) + ")"; });
+
+        legend.append("rect")
+            .attr("width", 18)
+            .attr("height", 18)
+            .attr('class', function(d) { return 'kc-' + d['id'] + ' ' + d['class'] });
+
+        legend.append("text")
+            .attr("x", 20)
+            .attr("y", 9)
+            .attr("class", 'legend-text')
+            .attr("dy", ".35em")
+            .style("text-anchor", "start")
+            .text(function(d) { return d['name'] });
+
+        legend.on("mouseover", function(d) { activateArea(d) });
+      }
+
+      // Map the geojson data!
+      function kc_map(width, height) {
+
+        // Create the map, and then use the bounds of the json areas to rescale/center the map.
+        // This strategy comes from http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
+
+        // Create a first guess for the projection
+        var center = d3.geo.centroid(json);
+        var scale = 150;
+        var projection = d3.geo.mercator().scale(scale).center(center);
+        var path = d3.geo.path()
+                        .projection(projection);
+
+        // Determine the bounds of the current map and use
+        // these to determine better values for the scale and translation
+        var bounds = path.bounds(json);
+        var hscale = scale * width / (bounds[1][0] - bounds[0][0]);
+        var vscale = scale * height / (bounds[1][1] - bounds[0][1]);
+        var scale = (hscale < vscale) ? hscale : vscale;
+        var offset = [width - (bounds[0][0] + bounds[1][0]) / 6.5,
+                         height - (bounds[0][1] + bounds[1][1]) / 1.65];
+
+        // New projection
+        projection = d3.geo.mercator().center(center)
+         .scale(scale * 0.96).translate(offset);
+        path = path.projection(projection);
+
+        var svg = d3.select("body").append("svg")
+                   .attr("width", width)
+                   .attr("height", height)
+                   .attr("class", "map");
+
+        // Bind data and create one path per GeoJSON feature
+        var shape = svg.selectAll("path")
+          .data(json.features)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .attr("class", function(d) { return "area kc-"+d.properties.id });
+
+        shape.on("mouseover", function(d) { activateArea(d) });
+
+      }
+
+      // Bar chart that shows commuter attributes for a given area,
+      // effectively a super fancy tooltip.
+      function tooltip_chart(chart_width, chart_height) {
+
+        var data = json.features;
+        ///////////////////////
+        // Chart Size Setup
+        var margin = { top: 35, right: 0, bottom: 30, left: 50 };
+
+        var width = chart_width - margin.left - margin.right;
+        var height = chart_height - margin.top - margin.bottom;
+
+        var chart = d3.select("body").append("svg").attr('class',"chart")
+            .attr("width", chart_width)
+            .attr("height", chart_height)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        ///////////////////////
+        // Scales
+        var x = d3.scale.ordinal()
+            .domain(pop_keys)
+            .rangeRoundBands([0, width], .1);
+
+        // drive_alone is the largest value so we can just get the max of that
+        var y = d3.scale.linear()
+            .domain([0, d3.max(data, function(d) { return d.properties['pop-commute-drive_alone']; }) * 1.1])
+            .range([height, 0]);
+
+        ///////////////////////
+        // Axis
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        chart.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        chart.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        chart.append("text")
+            .attr("y", -5)
+            .attr('text-anchor', 'end')
+            .attr("class", "axis axis-label")
+            .text("Population");
+
+        // Some placeholder text when the app first loads as a sort of "tutorial"
+        var placeholder_text = ["Hover over the map","or the bars below","to explore the data!"];
+        var placeholder = chart.selectAll(".placeholder").data(placeholder_text);
+
+        placeholder.enter().append("text")
+            .text(function(d) { return d })
+            .attr("text-anchor", "middle")
+            .attr("font-size", 32)
+            .attr("y", function(d, i) { return 50 + 35 * i; })
+            .attr("x", width / 2.0);
+
+        // For anything that needs to update
+        update_bar_chart = function(bar_data) {
+          // We don't need the placeholder anymore if we're displaying data
+          placeholder.remove();
+
+          ///////////////////////
+          // Title
+          var title = chart.selectAll(".graph-title").data([bar_data]);
+
+          title.enter().append("text")
+            .attr("text-anchor", "middle")
+            .attr("class", "graph-title")
+            .attr("y", -10)
+            .attr("x", width / 2.0);
+
+          title.transition()
+            .text(function(d) {
+              // Remove the unnecessary prefix in the json data
+              return label + ": " + d.shid.slice(d.shid.lastIndexOf(":") + 1);
+            });
+
+          // Transform from obj to array for d3
+          var temp_data = [];
+          for(var key in bar_data) {
+            if(pop_keys.indexOf(key) > -1) {
+              temp_data.push({name: key, value: bar_data[key], total: bar_data['total']});
+            }
+          }
+
+          ///////////////////////
+          // Bars
+          var bar = chart.selectAll(".bar")
+              .data(temp_data);
+
+          bar.enter().append("rect")
+              .attr("class", "bar")
+              .attr("x", function(d) { return x(d.name); })
+              .attr("y", height)
+              .attr("width", x.rangeBand())
+              .attr("height", 0);
+
+          bar.transition()
+              .duration(300)
+              .ease("sine")
+              .attr("y", function(d) { return y(d.value); })
+              .attr("height", function(d) { return height - y(d.value); });
+
+          bar.exit().remove();
+
+          // The text that sits on top of the bars
+          var bar_text = chart.selectAll(".bar-text")
+              .data(temp_data);
+
+          bar_text.enter().append("text")
+              .attr("class", "bar-text")
+              .attr("x", function(d) { return x(d.name) + (x.rangeBand() / 2.0) })
+              .attr('text-anchor', 'middle');
+
+          bar_text.transition()
+              .duration(300)
+              .ease("sine")
+              .attr("y", function(d) { return y(d.value) - 5; })
+              .text(function(d) {
+                // Translate the amount to a percentage for the area.
+                var perc = ((d['value'] / d['total']).toFixed(2) * 100.0).toFixed(0);
+
+                // Small values that are greater than 0 should probably be "<1%", rather than actually 0%
+                if(perc == 0 && d['value'] > 0) {
+                  perc = "<1";
+                } else if(isNaN(perc)) { // sechrest has no people so 0/0 is NaN
+                  perc = 0;
+                }
+                return parseInt(d['value']) + " (" + perc + "%)";
+              });
+
+          bar_text.exit().remove();
+        }
+      }
+
+      // Show distribution of number of commuters for each area (aka size of each area),
+      // ordered by the number/size, to provide context for the tooltip bars
+      function overall_chart(chart_width, chart_height) {
+        var data = json.features;
+
+        data = data.sort(function(a, b) {
+          return a.properties['total'] - b.properties['total'];
+        });
+
+        ///////////////////////
+        // Chart Size Setup
+        var margin = { top: 35, right: 0, bottom: 30, left: 50 };
+
+        var width = chart_width - margin.left - margin.right;
+        var height = chart_height - margin.top - margin.bottom;
+
+        var chart = d3.select("body").append("svg").attr('class',"totals chart")
+            .attr("width", chart_width)
+            .attr("height", chart_height)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        ///////////////////////
+        // Scales
+        var x = d3.scale.ordinal()
+            .domain(data.map(function(d) { return d.properties.id; }))
+            .rangeBands([0, width]);
+
+        var y = d3.scale.log()
+            .domain([1, d3.max(data, function(d) { return d.properties['total'] })])
+            .range([height, 0]);
+
+        ///////////////////////
+        // Axis
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .tickFormat(function (d) {
+              return y.tickFormat(4,d3.format(",d"))(d); // translate the log notation back to normal decimal
+            });
+
+        chart.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        chart.append("text")
+            .attr("y", -5)
+            .attr('text-anchor', 'end')
+            .attr("class", "axis axis-label")
+            .text("Population");
+
+        ///////////////////////
+        // Title
+        chart.append("text")
+          .text(label + 's Sorted by Commuter Population Size')
+          .attr("text-anchor", "middle")
+          .attr("class", "graph-title")
+          .attr("y", height + 20)
+          .attr("x", width / 2.0);
+
+        ///////////////////////
+        // Bars
+        var bar = chart.selectAll(".bar")
+            .data(data);
+
+        bar.enter().append("rect")
+            .attr("class", function(d) { return "bar kc-" + d.properties.id})
+            .attr("x", function(d) { return x(d.properties.id); })
+            .attr("y", height)
+            .attr("width", label == 'Neighborhood' ? 2 : 3) // there are less census tracts, 2 pixels hurts my eyes due to the contrast
+            .attr("height", 0);
+
+        bar.transition()
+            .duration(1500)
+            .ease("elastic")
+            .attr("y", function(d) {
+              if(d.properties['total'] > 0) { // sechrest has 0, which returns an impossible height, so ignore
+                return y(d.properties['total']);
+              }
+            })
+            .attr("height", function(d) {
+              if(d.properties['total'] > 0) { // sechrest has 0, which returns an impossible height, so ignore
+                return height - y(d.properties['total']);
+              }
+            });
+
+        bar.on("mouseover", function(d) { activateArea(d) });
+      }
+
+      // Helper function to tie interaction between the various charts together
+      function activateArea(d) {
+        d3.selectAll(".active").classed("active", false);
+        d3.selectAll(".kc-"+d.properties.id).classed("active", true);
+        update_bar_chart(d.properties);
+      }
+    });
+  }
+</script>
+
+<body>
+  <div class='header'>
+    <h2>Kansas City Commuter Data</h2>
+    <button id='tract-button' onclick="create_dashboard('tract')")>Tracts</button>
+    <button id='neighborhood-button' onclick="create_dashboard('neighborhood')">Neighborhoods</button>
+  </div>
+</body>

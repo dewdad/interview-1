@@ -1,0 +1,4 @@
+sidewalk-sort:
+  build: .
+  volumes:
+    - ./files:/app/files # mount the "files" folder so we can add new input files and read any new output files without having to rebuild the container
